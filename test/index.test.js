@@ -106,7 +106,7 @@ describe('validateTags', () => {
     expect(() => validateTags(badValue)).toThrow(/Invalid document\. Expected a string/)
   });
 
-  describe('extra tests (tests from spec doc)', () => {
+  describe('tests from spec doc', () => {
     test.each([
       [
         'The following text<C><B>is centred and in boldface</B></C>',
@@ -137,7 +137,7 @@ describe('validateTags', () => {
           message: 'Expected </B> found #'
         }
       ],
-    ])('%o results in %o', (document, expectedResult) => {
+    ])('the document %o results in %o', (document, expectedResult) => {
       expect(validateTags(document)).toEqual(expectedResult);
     });
   });

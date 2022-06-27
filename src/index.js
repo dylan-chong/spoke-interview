@@ -1,5 +1,9 @@
 /**
- * Returns true iff the given XML-like document has matching tags.
+ * Validates that all the tags in a given piece of text (a paragraph) are
+ * correctly nested, and that there are no missing or extra tags.
+ *
+ * Returns `{ isValid: boolean, message: string }` and `console.log`s the
+ * message
  *
  * Notes:
  * - Tags are enclosed by angle brackets, and have a single uppercase letter
@@ -14,11 +18,13 @@ const validateTags = (document) => {
   const { isValid, message } = validateTagsWithStack(tags);
 
   if (isValid) {
-    return { isValid: true, message: 'Correctly tagged paragraph' };
+    const validMessage = 'Correctly tagged paragraph';
+    console.log(validMessage);
+    return { isValid: true, message: validMessage };
   } else {
+    console.log(message);
     return { isValid: false, message };
   }
-  // TODO prints output
 };
 
 const isClosingTag = (tag) => tag.indexOf('/') !== -1;
@@ -67,7 +73,3 @@ const validateTagsWithStack = (tags) => {
 };
 
 module.exports = validateTags;
-
-// TODO README
-// TODO github repo
-// TODO tests from doc

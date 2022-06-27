@@ -1,5 +1,8 @@
 # Tag Checker
 
+Validates that all the tags in a given piece of text (a paragraph) are
+correctly nested, and that there are no missing or extra tags.
+
 ## Setup
 
 - `nvm install` or other method of installing Node (version in `./.nvmrc`)
