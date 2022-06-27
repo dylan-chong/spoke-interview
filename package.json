@@ -3,5 +3,11 @@
   "version": "1.0.0",
   "description": "Validates matching HTML-like tag documents",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^28.1.1"
+  }
 }
