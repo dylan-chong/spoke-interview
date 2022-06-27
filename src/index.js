@@ -21,41 +21,66 @@ const validateTags = (document) => {
   // TODO prints output
 };
 
-const validateTagsRecursive = (tagsAfterOpening) => {
-  if (tagsAfterOpening.length === 0)
-    return { isValid: true };
+const isClosingTag = (tag) => tag.indexOf('/') !== -1;
 
-  // We have to start with an opening tag
-  if (isClosingTag(tagsAfterOpening[0]))
+const validateTagsRecursive = (tags) => {
+  console.log('validateTagsRecursive', {tags})
+
+  // Empty document (or no more tags inside a pair)
+  if (tags.length === 0) {
+    return { isValid: true, message: 'Correctly tagged paragraph', remainingTags: [] };
+  }
+
+  // We need to start with an opening tag, not a closing one
+  if (isClosingTag(tags[0])) {
     return {
       isValid: false,
-      message: `Expected # but found ${tagsAfterOpening[0]}`
+      message: `Expected # but found ${tags[0]}`
     };
+  }
 
-  const openingTag = tagsAfterOpening[0];
+  return validateTagsRecursiveWithOpening(tags[0], tags.slice(1));
+}
+
+const validateTagsRecursiveWithOpening = (openingTag, tagsAfterOpening) => {
+  console.log('validateTagsRecursiveWithOpening', {openingTag, tagsAfterOpening})
   const expectedClosingTag = openingTag.replace('<', '</');
 
-  // Make sure there is an closing tag for the opening one
-  if (tagsAfterOpening.length < 2)
+  // No more tags, missing the closing one
+  if (tagsAfterOpening.length === 0) {
     return {
       isValid: false,
       message: `Expected ${expectedClosingTag} but found #`
     };
+  }
 
-  const actualClosingTag = tagsAfterOpening[tagsAfterOpening.length - 1];
+  // Close comes immediately after opening. Continue as open/close pair have been found
+  if (tagsAfterOpening[0] === expectedClosingTag) {
+    return { isValid: true, remainingTags: tagsAfterOpening.slice(1) };
+  }
 
-  if (expectedClosingTag !== actualClosingTag)
+  // Closing tag is not expectedClosingTag, so is a stray one
+  if (isClosingTag(tagsAfterOpening[0])) {
     return {
       isValid: false,
-      message: `Expected ${expectedClosingTag} but found ${actualClosingTag}`
+      message: `Expected # but found ${openingTag}`
     };
+  }
 
-  // Recurse on the tags 'inside' the outermost pair
-  return validateTagsRecursive(tagsAfterOpening.slice(1, tagsAfterOpening.length - 1));
+  // tagsAfterOpening[0] must be a nested opening tag at this point.
+  // Recurse to find subdocuments
+  const { isValid, message, remainingTags } =
+    validateTagsRecursiveWithOpening(tagsAfterOpening[0], tagsAfterOpening.slice(1));
+  if (!isValid) {
+    return { isValid: false, message };
+  }
+
+  // After recursion, we should expect to see either the expectedClosingTag or
+  // another openingTag. Eerily, we can just recurse as this is a similar
+  // position to the start of the document. We have already advanced by at
+  // least 1 position in the array of tags so this won't loop infinitely
+  return validateTagsRecursiveWithOpening(openingTag, remainingTags);
 };
-
-const isClosingTag = (tag) => tag.indexOf('/') !== -1
-
 
 module.exports = validateTags;
 
