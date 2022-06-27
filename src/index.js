@@ -1,8 +1,3 @@
-const {
-  NO_TAGS_FOUND,
-  findNextTag
-} = require('./helpers');
-
 /**
  * Returns true iff the given XML-like document has matching tags.
  *
@@ -15,80 +10,55 @@ const validateTags = (document) => {
   if (typeof document !== 'string')
     throw new Error('Invalid document. Expected a string');
 
-  const match = findNextTag(document);
-  if (match === NO_TAGS_FOUND) return { isValid: true };
-
-  const { isValid, errorMessage } = validateTagsRecursive(match.tag, match.after);
+  const tags = document.match(/<\/?[A-Z]>/g) || [];
+  const { isValid, message } = validateTagsRecursive(tags);
 
   if (isValid) {
     return { isValid: true, message: 'Correctly tagged paragraph' };
   } else {
-    return { isValid: false, message: errorMessage };
+    return { isValid: false, message };
   }
   // TODO prints output
 };
 
-const validateTagsRecursive = (currentOpeningTag, subDocAfterOpening) => {
-  const expectedClosingTag = currentOpeningTag.replace('<', '</');
+const validateTagsRecursive = (tagsAfterOpening) => {
+  if (tagsAfterOpening.length === 0)
+    return { isValid: true };
 
-  const matchAfterOpening = findNextTag(subDocAfterOpening);
-  if (matchAfterOpening === NO_TAGS_FOUND) {
-    return { isValid: false, errorMessage: `Expected ${expectedClosingTag} but found #` };
-  }
+  // We have to start with an opening tag
+  if (isClosingTag(tagsAfterOpening[0]))
+    return {
+      isValid: false,
+      message: `Expected # but found ${tagsAfterOpening[0]}`
+    };
 
-  const { tag: nextTag, after: subDocAfterTag } = matchAfterOpening;
+  const openingTag = tagsAfterOpening[0];
+  const expectedClosingTag = openingTag.replace('<', '</');
 
-  // if (isClosingTag(nextTag)) {
-    // TODO tests for this
+  // Make sure there is an closing tag for the opening one
+  if (tagsAfterOpening.length < 2)
+    return {
+      isValid: false,
+      message: `Expected ${expectedClosingTag} but found #`
+    };
 
-  if (nextTag === expectedClosingTag) {
-    return { isValid: true, remainingSubDoc: subDocAfterTag };
-  }
+  const actualClosingTag = tagsAfterOpening[tagsAfterOpening.length - 1];
 
-  // Recursing to match nested tags
+  if (expectedClosingTag !== actualClosingTag)
+    return {
+      isValid: false,
+      message: `Expected ${expectedClosingTag} but found ${actualClosingTag}`
+    };
 
-  const nestedOpeningTag = nextTag;
-  const { isValid, errorMessage, remainingSubDoc } =
-    validateTagsRecursive(nestedOpeningTag, subDocAfterTag);
+  // Recurse on the tags 'inside' the outermost pair
+  return validateTagsRecursive(tagsAfterOpening.slice(1, tagsAfterOpening.length - 1));
+};
 
-  // Find closing match:
-
-  if (!isValid) return { isValid, errorMessage };
-
-  const hopefullyClosingMatch = findNextTag(subDocAfterOpening);
-  if (matchAfterOpening === NO_TAGS_FOUND) {
-    return { isValid: false, errorMessage: `Expected ${expectedClosingTag} but found #` };
-  }
-
-  // TODO finis hthis bit
-}
-
-/*
-before
-
-<A>
-
-  between
-</A>
-after
-
-
-
-before
-
-<A>
-
-  between
-  <B>
-    between2
-  </B>
-  between3
-</A>
-after
-*/
+const isClosingTag = (tag) => tag.indexOf('/') !== -1
 
 
 module.exports = validateTags;
 
 // TODO README
 // TODO github repo
+// TODO tests from doc
