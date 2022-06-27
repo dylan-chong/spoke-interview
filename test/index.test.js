@@ -76,15 +76,20 @@ describe('validateTags', () => {
   });
 
   describe('non-matching tags', () => {
-    test.only.each([
-      // ['<A>', 'Expected </A> but found #'],
-      // ['<B>', 'Expected </B> but found #'],
-      // ['<C>', 'Expected </C> but found #'],
-      // ['</A>', 'Expected # but found </A>'],
-      // ['<A><A>', 'Expected </A> but found #'],
-      // ['<B><B>', 'Expected </B> but found #'],
-      ['<A></A><A>', 'Expected </A> but found #'],
-      // ['<A><A></A>', 'Expected </A> but found #'],
+    test.each([
+      // 1 level
+      ['<A>', 'Expected </A> found #'],
+      ['<B>', 'Expected </B> found #'],
+      ['<C>', 'Expected </C> found #'],
+      ['</A>', 'Expected # found </A>'],
+      ['<A></A><A>', 'Expected </A> found #'],
+      ['<A></A></A>', 'Expected # found </A>'],
+      ['<A><A><B></B></A>', 'Expected </A> found #'],
+      // 2 levels
+      ['<A><A>', 'Expected </A> found #'],
+      ['<B><B>', 'Expected </B> found #'],
+      ['<A><A></A>', 'Expected </A> found #'],
+      ['<A></A> <B><C></C></D></B>', 'Expected </B> found </D>'],
     ])('returns invalid (for document %o)', (document, expectedMessage) => {
       expect(validateTags(document)).toEqual({ isValid: false, message: expectedMessage });
     });
@@ -107,33 +112,33 @@ describe('validateTags', () => {
         'The following text<C><B>is centred and in boldface</B></C>',
         VALID_RESULT
       ],
-      // [
-        // '<B>This <\\g>is <B>boldface</B> in <<*> a</B> <\\6> <<d>sentence',
-        // VALID_RESULT
-      // ],
-      // [
-        // '<B><C> This should be centred and in boldface, but the tags are wrongly nested </B></C>',
-        // {
-          // isValid: false,
-          // message: 'Expected </C> found </B>'
-        // }
-      // ],
-      // [
-        // '<B>This should be in boldface, but there is an extra closing tag</B></C>',
-        // {
-          // isValid: false,
-          // message: 'Expected # found </C>'
-        // }
-      // ],
-      // [
-        // '<B><C>This should be centred and in boldface, but there is a missing closing tag</C>',
-        // {
-          // isValid: false,
-          // message: 'Expected </B> found #'
-        // }
-      // ],
+      [
+        '<B>This <\\g>is <B>boldface</B> in <<*> a</B> <\\6> <<d>sentence',
+        VALID_RESULT
+      ],
+      [
+        '<B><C> This should be centred and in boldface, but the tags are wrongly nested </B></C>',
+        {
+          isValid: false,
+          message: 'Expected </C> found </B>'
+        }
+      ],
+      [
+        '<B>This should be in boldface, but there is an extra closing tag</B></C>',
+        {
+          isValid: false,
+          message: 'Expected # found </C>'
+        }
+      ],
+      [
+        '<B><C>This should be centred and in boldface, but there is a missing closing tag</C>',
+        {
+          isValid: false,
+          message: 'Expected </B> found #'
+        }
+      ],
     ])('%o results in %o', (document, expectedResult) => {
-        expect(validateTags(document)).toEqual(expectedResult);
+      expect(validateTags(document)).toEqual(expectedResult);
     });
   });
 });
