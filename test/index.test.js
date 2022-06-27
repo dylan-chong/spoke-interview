@@ -15,21 +15,38 @@ describe('validateTags', () => {
     test.each(
       Array
         .from('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        .map((tagInner) => [tagInner])
-    )('for a valid single tag (%s)', (tagInner) => {
-      expect(validateTags(`<${tagInner}></${tagInner}>`)).toEqual(true);
-    });
-
-    test.each(
-      Array
-        .from('abcdefghijklmnopqrstuvwxyz!@#$%^&*())-=_+')
-        .map((tagInner) => [tagInner])
-    )('for what appear to be tags but are actually ignored (%s)', (tagInner) => {
-      expect(validateTags(`<${tagInner}></${tagInner}>`)).toEqual(true);
+        .map((tagName) => [tagName])
+    )('for a valid single tag (%s)', (tagName) => {
+      expect(validateTags(`<${tagName}></${tagName}>`)).toEqual(true);
     });
   });
 
+  describe('ignored tags', () => {
+    test.each(
+      Array
+        .from('abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*())-=_+')
+        .map((tagName) => [tagName])
+    )('for what appear to be tags but are actually ignored (%s)', (tagName) => {
+      expect(validateTags(`<${tagName}></${tagName}>`)).toEqual(true);
+    });
+
+    test.each([
+      ['<A'],
+      ['<A >'],
+      ['A>'],
+      ['< A>'],
+      ['before< A>'],
+      ['< A>after'],
+      ['before < A>'],
+      ['< A> after'],
+      ['before < A> after'],
+    ])('for an incomplete tag of `%s` (they are ignored)', (tag) => {
+      expect(validateTags(tag)).toEqual(true);
+    })
+  });
+
   describe('returns false (for invalid tags)', () => {
+    // TODO
   });
 
   test.each([
