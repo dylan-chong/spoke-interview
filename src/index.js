@@ -32,17 +32,35 @@ const validateTagsRecursive = (currentOpeningTag, subDocAfterOpening) => {
   const expectedClosingTag = currentOpeningTag.replace('<', '</');
 
   const matchAfterOpening = findNextTag(subDocAfterOpening);
-  if (matchAfterOpening === NO_TAGS_FOUND)
-    return { isValid: false }; // Expected expectedClosingTag but found #
+  if (matchAfterOpening === NO_TAGS_FOUND) {
+    return { isValid: false, errorMessage: `Expected ${expectedClosingTag} but found #` };
+  }
 
   const { tag: nextTag, after: subDocAfterTag } = matchAfterOpening;
 
+  // if (isClosingTag(nextTag)) {
+    // TODO tests for this
+
   if (nextTag === expectedClosingTag) {
-    return { isValid: true };
-  } else {
-    const newOpeningTag = nextTag;
-    return validateTagsRecursive(newOpeningTag, subDocAfterTag)
+    return { isValid: true, remainingSubDoc: subDocAfterTag };
   }
+
+  // Recursing to match nested tags
+
+  const nestedOpeningTag = nextTag;
+  const { isValid, errorMessage, remainingSubDoc } =
+    validateTagsRecursive(nestedOpeningTag, subDocAfterTag);
+
+  // Find closing match:
+
+  if (!isValid) return { isValid, errorMessage };
+
+  const hopefullyClosingMatch = findNextTag(subDocAfterOpening);
+  if (matchAfterOpening === NO_TAGS_FOUND) {
+    return { isValid: false, errorMessage: `Expected ${expectedClosingTag} but found #` };
+  }
+
+  // TODO finis hthis bit
 }
 
 /*
