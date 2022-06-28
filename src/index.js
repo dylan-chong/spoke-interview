@@ -15,16 +15,10 @@ const validateTags = (document) => {
     throw new Error('Invalid document. Expected a string');
 
   const tags = document.match(/<\/?[A-Z]>/g) || [];
-  const { isValid, message } = validateTagsWithStack(tags);
 
-  if (isValid) {
-    const validMessage = 'Correctly tagged paragraph';
-    console.log(validMessage);
-    return { isValid: true, message: validMessage };
-  } else {
-    console.log(message);
-    return { isValid: false, message };
-  }
+  const validationResult = validateTagsWithStack(tags);
+  console.log(validationResult.message);
+  return validationResult;
 };
 
 const isClosingTag = (tag) => tag.indexOf('/') !== -1;
